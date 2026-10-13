@@ -1,1 +1,3 @@
-# typed-scopegraphs-lm-jastadd
+# Typed Scope Graphs for LM in JastAdd
+
+... todo ...
