@@ -59,11 +59,20 @@ jar {
     // This is needed because the Beaver runtime classes are otherwise not included.
     // Source: https://www.mkyong.com/gradle/gradle-create-a-jar-file-with-dependencies/
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    into('src/jastadd') { from('src/jastadd') }
     into('src/parser') { from('src/parser') }
 }
 
 // Before compiling, we should generate some Java code:
-compileJava.dependsOn 'generateScanner', 'generateParser'
+compileJava.dependsOn 'generateASTclasses', 'generateScanner', 'generateParser'
+
+// JastAdd generates the AST classes
+task generateASTclasses(type: org.jastadd.JastAddTask) {
+    description 'Generates the compiler AST classes from JastAdd specifications.'
+    outputDir = file('src/gen')
+    sources = fileTree(dir: 'src/jastadd', includes: [ '**/*.jrag', '**/*.jadd', '**/*.ast' ])
+    options = [ '--package=lm.ast', '--beaver', '--cache=all' ]
+}
 
 // JFlex generates the scanner
 task generateScanner(type: JavaExec) {

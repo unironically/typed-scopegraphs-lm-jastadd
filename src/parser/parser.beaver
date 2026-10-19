@@ -11,49 +11,60 @@
 %terminals TRUE, FALSE, ASSIGN, DEF, MODULE, IMPORT, PLUS, COLON, LBRACE, 
            RBRACE, BOOLTY, INTTY, IDENTIFIER, INTEGER;
 
+%typeof program = "Program";
+%typeof decls = "Decls";
+%typeof decl = "Decl";
+%typeof module = "Module";
+%typeof expr = "Expr";
+%typeof type = "Type";
+%typeof bind = "Bind";
+%typeof varRef = "VarRef";
+%typeof modRef = "ModRef";
+
 %left PLUS;
 
 %goal program;
 
 program = 
-    decls
+    decls {: return new Program(decls); :}
   ;
 
 decls =
-  | decl decls
+               {: return new DeclsNil(); :}
+  | decl decls {: return new DeclsCons(decl, decls); :}
   ;
 
 decl =
-    DEF bind
-  | module
-  | IMPORT modRef
+    DEF bind      {: return new DeclDef(bind); :}
+  | module        {: return new DeclMod(module); :}
+  | IMPORT modRef {: return new DeclImp(modRef); :}
   ;
 
 module =
-    MODULE IDENTIFIER LBRACE decls RBRACE
+    MODULE IDENTIFIER LBRACE decls RBRACE {: return new Module(IDENTIFIER, decls); :}
   ;
 
 expr =
-    TRUE
-  | FALSE
-  | INTEGER.num
-  | varRef
-  | expr.a PLUS expr.b
+    TRUE                                    {: return new ExprTrue(); :} 
+  | FALSE                                   {: return new ExprFalse(); :}
+  | INTEGER.num                             {: return new ExprInt(num); :}
+  | varRef                                  {: return new ExprVar(varRef); :}
+  | expr.a PLUS expr.b                      {: return new ExprAdd(a, b); :}
   ;
 
 type =
-    INTTY
-  | BOOLTY
+    INTTY                                   {: return new IntType(); :}
+  | BOOLTY                                  {: return new BoolType(); :}
   ;
 
 bind =
-    IDENTIFIER COLON type ASSIGN expr
+    IDENTIFIER COLON type ASSIGN expr       {: return new Bind(IDENTIFIER, type, expr); :}
   ;
 
 varRef = 
-    IDENTIFIER
+    IDENTIFIER                              {: return new VarRef(IDENTIFIER); :}
   ;
 
 modRef =
-    IDENTIFIER
+    IDENTIFIER                              {: return new ModRef(IDENTIFIER); :}
   ;

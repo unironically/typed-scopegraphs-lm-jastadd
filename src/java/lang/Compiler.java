@@ -6,14 +6,16 @@ import java.io.FileNotFoundException;
 
 import lm.ast.LMParser;
 import lm.ast.LMScanner;
+import lm.ast.Program;
 
 public class Compiler {
 
-  public static void parse(String[] args) throws IOException, beaver.Parser.Exception {
+  public static Program parse(String[] args) throws IOException, beaver.Parser.Exception {
     String filename = args[args.length - 1]; // Assumes filename is the last argument
     LMScanner scanner = new LMScanner(new FileReader(filename));
     LMParser parser = new LMParser();
-    parser.parse(scanner);
+    Program prog = (Program) parser.parse(scanner);
+    return prog;
   }
 
   public static void main(String[] args) {
