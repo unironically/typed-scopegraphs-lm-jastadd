@@ -1,0 +1,250 @@
+/* Printing an LM program's AST textually.
+ * StringBuilder as 'treePrint' attribute type as void attributes are not allowed.
+ * Pre-computes text spacing based on tree height for cascading tree output.
+ */
+
+aspect TreePrint {
+
+  static String Program.tab = "  ";
+
+  //
+
+  syn lazy String Program.treePrint() {
+    StringBuilder sb = new StringBuilder("Program\n");
+    getds().treePrint(sb, 0);
+    return sb.toString();
+  }
+
+  syn lazy int Program.height() = getds().height() + 1;
+
+  eq Program.getds().spacings() {
+    String[] spacings = new String[height()];
+    spacings[0] = Program.tab;
+    for (int i = 1; i < height(); i++)
+      spacings[i] = spacings[i-1] + Program.tab;
+    return spacings;
+  }
+
+  //
+
+  syn lazy StringBuilder Decls.treePrint(StringBuilder sb, int level);
+  syn lazy int Decls.height();
+  inh lazy String[] Decls.spacings();
+
+  syn lazy StringBuilder DeclsCons.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("DeclsCons\n");
+    getd().treePrint(sb, level + 1);
+    sb.append("\n");
+    getds().treePrint(sb, level + 1);
+    return sb;
+  }
+
+  syn lazy int DeclsCons.height() = 1 + ((getd().height() > getds().height())
+                                         ? getd().height()
+                                         : getds().height());
+
+  eq DeclsCons.getd().spacings() = spacings();
+  eq DeclsCons.getds().spacings() = spacings();
+
+  syn lazy StringBuilder DeclsNil.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("DeclsNil");
+    return sb;
+  }
+
+  syn lazy int DeclsNil.height() = 1;
+
+  //
+
+  syn lazy StringBuilder Decl.treePrint(StringBuilder sb, int level);
+  syn lazy int Decl.height();
+  inh lazy String[] Decl.spacings();
+
+  syn lazy StringBuilder DeclDef.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("DeclDef\n");
+    getb().treePrint(sb, level + 1);
+    return sb;
+  }
+
+  syn lazy int DeclDef.height() = 1 + getb().height();
+
+  eq DeclDef.getb().spacings() = spacings();
+
+  syn lazy StringBuilder DeclMod.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("DeclMod\n");
+    getm().treePrint(sb, level + 1);
+    return sb;
+  }
+
+  syn lazy int DeclMod.height() = 1 + getm().height();
+
+  eq DeclMod.getm().spacings() = spacings();
+
+  syn lazy StringBuilder DeclImp.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("DeclImp\n");
+    getr().treePrint(sb, level + 1);
+    return sb;
+  }
+
+  syn lazy int DeclImp.height() = 1 + getr().height();
+
+  eq DeclImp.getr().spacings() = spacings();
+
+  //
+
+  inh lazy String[] Bind.spacings();
+
+  syn lazy StringBuilder Bind.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("Bind\n")
+      .append(spacings()[level + 1])
+      .append("\"")
+      .append(getid())
+      .append("\"\n");
+    getty().treePrint(sb, level + 1);
+    sb.append("\n");
+    gete().treePrint(sb, level + 1);
+    return sb;
+  }
+
+  syn lazy int Bind.height() = 1 + gete().height();
+
+  eq Bind.getty().spacings() = spacings();
+  eq Bind.gete().spacings() = spacings();
+
+  //
+
+  inh lazy String[] Module.spacings();
+
+  syn lazy StringBuilder Module.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("DeclImp\n")
+      .append(spacings()[level + 1])
+      .append("\"")
+      .append(getid())
+      .append("\"\n");
+    getds().treePrint(sb, level + 1);
+    return sb;
+  }
+
+  syn lazy int Module.height() = 1 + getds().height();
+
+  eq Module.getds().spacings() = spacings();
+
+  //
+
+  inh lazy String[] VarRef.spacings();
+
+  syn lazy StringBuilder VarRef.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("VarRef\n")
+      .append(spacings()[level + 1])
+      .append("\"")
+      .append(getid())
+      .append("\"");
+    return sb;
+  }
+
+  syn lazy int VarRef.height() = 2;
+
+  //
+
+  inh lazy String[] ModRef.spacings();
+
+  syn lazy StringBuilder ModRef.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("ModRef\n")
+      .append(spacings()[level + 1])
+      .append("\"")
+      .append(getid())
+      .append("\"");
+    return sb;
+  }
+
+  syn lazy int ModRef.height() = 2;
+
+  //
+
+  syn lazy StringBuilder Expr.treePrint(StringBuilder sb, int level);
+  syn lazy int Expr.height();
+  inh lazy String[] Expr.spacings();
+
+  syn lazy StringBuilder ExprVar.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("ExprVar\n");
+    getr().treePrint(sb, level + 1);
+    return sb;
+  }
+
+  syn lazy int ExprVar.height() = 2;
+
+  syn lazy StringBuilder ExprInt.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("ExprInt\n")
+      .append(spacings()[level + 1])
+      .append(getNUMERAL());
+    return sb;
+  }
+
+  syn lazy int ExprInt.height() = 2;
+
+  syn lazy StringBuilder ExprTrue.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("ExprTrue");
+    return sb;
+  }
+
+  syn lazy int ExprTrue.height() = 1;
+
+  syn lazy StringBuilder ExprFalse.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("ExprFalse");
+    return sb;
+  }
+
+  syn lazy int ExprFalse.height() = 1;
+
+  syn lazy StringBuilder ExprAdd.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("ExprAdd\n");
+    getl().treePrint(sb, level + 1);
+    sb.append("\n");
+    getr().treePrint(sb, level + 1);
+    return sb;
+  }
+
+  syn lazy int ExprAdd.height() = 1 + ((getl().height() > getl().height())
+                                       ? getl().height()
+                                       : getr().height());
+
+  eq ExprAdd.getl().spacings() = spacings();
+  eq ExprAdd.getr().spacings() = spacings();
+
+  //
+
+  syn lazy StringBuilder Type.treePrint(StringBuilder sb, int level);
+  inh lazy String[] Type.spacings();
+
+  syn lazy StringBuilder IntType.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("IntType");
+    return sb;
+  }
+
+  syn lazy StringBuilder BoolType.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("BoolType");
+    return sb;
+  }
+
+  syn lazy StringBuilder ErrType.treePrint(StringBuilder sb, int level) {
+    sb.append(spacings()[level])
+      .append("ErrType");
+    return sb;
+  }
+
+}

@@ -24,8 +24,8 @@ public class Compiler {
         System.err.println("You must specify a source file on the command line!");
         System.exit(1);
       }
-      parse(args);
-      System.out.println("Parse success!");
+      Program prog = parse(args);
+      System.out.println(prog.treePrint());
     } catch (FileNotFoundException e) {
         System.out.println("File not found!");
         System.exit(1);
