@@ -1,0 +1,59 @@
+%class "LMParser";
+%package "lm.ast";
+
+%embed {:
+    static public class SyntaxError extends RuntimeException { public SyntaxError(String msg) {super(msg);}}
+    protected void recoverFromError(Symbol token, TokenStream in) {
+        throw new SyntaxError("Cannot recover from the syntax error");
+    }
+:};
+
+%terminals TRUE, FALSE, ASSIGN, DEF, MODULE, IMPORT, PLUS, COLON, LBRACE, 
+           RBRACE, BOOLTY, INTTY, IDENTIFIER, INTEGER;
+
+%left PLUS;
+
+%goal program;
+
+program = 
+    decls
+  ;
+
+decls =
+  | decl decls
+  ;
+
+decl =
+    DEF bind
+  | module
+  | IMPORT modRef
+  ;
+
+module =
+    MODULE IDENTIFIER LBRACE decls RBRACE
+  ;
+
+expr =
+    TRUE
+  | FALSE
+  | INTEGER.num
+  | varRef
+  | expr.a PLUS expr.b
+  ;
+
+type =
+    INTTY
+  | BOOLTY
+  ;
+
+bind =
+    IDENTIFIER COLON type ASSIGN expr
+  ;
+
+varRef = 
+    IDENTIFIER
+  ;
+
+modRef =
+    IDENTIFIER
+  ;
