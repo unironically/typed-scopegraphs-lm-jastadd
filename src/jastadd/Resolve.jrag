@@ -1,0 +1,24 @@
+aspect Resolve {
+
+  inh lazy ArrayList<Scope> Scope.LEX();
+  inh lazy ArrayList<VarScope> Scope.VAR();
+  inh lazy ArrayList<ModScope> Scope.MOD();
+  inh lazy ArrayList<ModScope> Scope.IMP();
+
+  syn lazy ArrayList<Scope> Scope.followLEX() {
+    return null;
+  }
+
+  syn lazy ArrayList<VarScope> Scope.followVAR() {
+    return null;
+  }
+
+  syn lazy ArrayList<ModScope> Scope.followMOD() {
+    return null;
+  }
+
+  syn lazy ArrayList<ModScope> Scope.followIMP() {
+    return null;
+  }
+
+}

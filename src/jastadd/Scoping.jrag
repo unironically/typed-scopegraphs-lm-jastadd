@@ -1,0 +1,16 @@
+import java.util.ArrayList;
+
+aspect Scoping {
+
+  // Program
+
+  syn nta lazy LexScope Program.globScope() = new LexScope();
+  eq Program.globScope().LEX() = new ArrayList<>();
+  eq Program.globScope().VAR() = new ArrayList<>();
+  eq Program.globScope().MOD() = new ArrayList<>();
+  eq Program.globScope().IMP() = new ArrayList<>();
+
+
+  
+
+}
