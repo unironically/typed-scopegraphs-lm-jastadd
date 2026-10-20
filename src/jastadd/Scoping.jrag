@@ -1,6 +1,14 @@
 import java.util.ArrayList;
 
 aspect Scoping {
+  syn lazy ArrayList<VarScope> Decls.varTargets();
+  syn lazy ArrayList<ModScope> Decls.modTargets();
+  syn lazy ArrayList<ModScope> Decls.impTargets();
+}
+
+aspect Scoping {
+
+  
 
   // Program
 
@@ -11,6 +19,50 @@ aspect Scoping {
   eq Program.globScope().IMP() = new ArrayList<>();
 
 
-  
+  // DeclsCons
+
+  eq DeclsCons.varTargets() {
+    ArrayList<VarScope> l = new ArrayList<>();
+    ArrayList<VarScope> r = new ArrayList<>();
+    l.addAll(r);
+    return l;
+  }
+
+  eq DeclsCons.modTargets() {
+    ArrayList<ModScope> l = new ArrayList<>();
+    ArrayList<ModScope> r = new ArrayList<>();
+    l.addAll(r);
+    return l;
+  }
+
+  eq DeclsCons.impTargets() {
+    ArrayList<ModScope> l = new ArrayList<>();
+    ArrayList<ModScope> r = new ArrayList<>();
+    l.addAll(r);
+    return l;
+  }
+
+  // DeclsNil
+
+  eq DeclsNil.varTargets() {
+    ArrayList<VarScope> l = new ArrayList<>();
+    ArrayList<VarScope> r = new ArrayList<>();
+    l.addAll(r);
+    return l;
+  }
+
+  eq DeclsNil.modTargets() {
+    ArrayList<ModScope> l = new ArrayList<>();
+    ArrayList<ModScope> r = new ArrayList<>();
+    l.addAll(r);
+    return l;
+  }
+
+  eq DeclsNil.impTargets() {
+    ArrayList<ModScope> l = new ArrayList<>();
+    ArrayList<ModScope> r = new ArrayList<>();
+    l.addAll(r);
+    return l;
+  }
 
 }
