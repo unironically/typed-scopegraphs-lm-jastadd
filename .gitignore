@@ -2,3 +2,4 @@ src/gen
 build/
 compiler.jar
 .gradle/
+*.class

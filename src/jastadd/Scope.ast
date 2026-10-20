@@ -1,0 +1,6 @@
+abstract Scope ::= ;
+RegScope:Scope ::= ;
+
+abstract DclScope:Scope ::= <name:String>;
+VarScope:DclScope ::= <AstNode:Bind>;
+ModScope:DclScope ::= <AstNode:Module>;
