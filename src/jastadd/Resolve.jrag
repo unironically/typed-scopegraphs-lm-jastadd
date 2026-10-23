@@ -1,15 +1,44 @@
 aspect Resolve {
 
-  /*
-  inh lazy ArrayList<Scope>    Scope.lex();
-  inh lazy ArrayList<VarScope> Scope.var();
-  inh lazy ArrayList<ModScope> Scope.mod();
-  inh lazy ArrayList<ModScope> Scope.imp();
-  */
-
   inh lazy ArrayList<Scope> Scope.lex();
   coll ArrayList<VarScope>  Scope.var();
   coll ArrayList<ModScope>  Scope.mod();
   coll ArrayList<ModScope>  Scope.imp();
+
+  //
+
+  syn lazy ArrayList<VarScope> Scope.resolveLexVar(String lookup) {
+    ArrayList<VarScope> res = new ArrayList<>();
+    Boolean found = this.rxLexVar(lookup, res);
+    return res;
+  } 
+
+  syn lazy Boolean Scope.rxLexVar(String lookup, ArrayList<VarScope> res) {
+
+    Boolean foundVars = false;
+
+    for (VarScope tgt: this.var()) {
+      Boolean resolved = tgt.rxVar(lookup, res);
+      foundVars |= resolved;
+    }
+
+    if (foundVars) return true;
+
+    for (Scope tgt: this.lex()) {
+      Boolean resolved = tgt.rxLexVar(lookup, res);
+      if (resolved) return true;
+    }
+
+    return false;
+
+  }
+
+  syn lazy Boolean VarScope.rxVar(String lookup, ArrayList<VarScope> res) {
+    if (lookup.equals(this.getname())) {
+      res.add(this);
+      return true;
+    }
+    return false;
+  }
 
 }
