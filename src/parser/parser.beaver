@@ -58,11 +58,15 @@ type =
   ;
 
 bind =
-    IDENTIFIER COLON type ASSIGN expr       {: return new Bind(IDENTIFIER, type, expr); :}
+    IDENTIFIER COLON type ASSIGN expr       {: Bind b = new Bind(IDENTIFIER, type, expr);
+                                               b.setStart(Symbol.getLine(IDENTIFIER.getStart()), (short) 0);
+                                               return b; :}
   ;
 
 varRef = 
-    IDENTIFIER                              {: return new VarRef(IDENTIFIER); :}
+    IDENTIFIER                              {: VarRef vr = new VarRef(IDENTIFIER); 
+                                               vr.setStart(Symbol.getLine(IDENTIFIER.getStart()), (short) 0);
+                                               return vr; :}
   ;
 
 modRef =

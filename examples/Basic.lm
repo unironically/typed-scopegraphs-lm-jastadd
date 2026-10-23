@@ -1,3 +1,4 @@
 def a:int = 1
 def b:int = 2
-def c:int = a + b
+def c:int = a
+def d:int = b

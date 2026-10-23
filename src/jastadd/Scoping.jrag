@@ -14,10 +14,14 @@ aspect Scoping {
   eq Program.getds().s() = this.glob();
   eq Program.getds().s_mod() = this.dummy();
 
+  syn lazy Boolean Program.ok() = this.getds().ok();
+
   // Decls
 
   inh lazy Scope Decls.s();
   inh lazy Scope Decls.s_mod();
+
+  syn lazy Boolean Decls.ok() = false;
 
   // DeclsCons
 
@@ -35,7 +39,11 @@ aspect Scoping {
   eq DeclsCons.getds().s() = this.next();
   eq DeclsCons.getds().s_mod() = this.s_mod();
 
+  syn lazy Boolean DeclsCons.ok() = this.getd().ok() && this.getds().ok();
+
   // DeclsNil
+
+  syn lazy Boolean DeclsNil.ok() = true;
 
   // Decl
 
@@ -43,11 +51,15 @@ aspect Scoping {
   inh lazy Scope Decl.s_def();
   inh lazy Scope Decl.s_mod();
 
+  syn lazy Boolean Decl.ok() = false;
+
   // DeclDef
 
   eq DeclDef.b().s() = this.s();
-  eq DeclDef.b().s_def() = this.s();
+  eq DeclDef.b().s_def() = this.s_def();
   eq DeclDef.b().s_mod() = this.s_mod();
+
+  syn lazy Boolean DeclDef.ok() = this.getb().ok();
 
   // Bind
 
@@ -65,9 +77,16 @@ aspect Scoping {
 
   eq Bind.gete().s() = this.s();
 
+  syn lazy Boolean Bind.ok() = this.gete().ok();
+
   // Expr
 
   inh lazy Scope Expr.s();
+
+  syn lazy Boolean Expr.ok() = false;
+
+  syn lazy Boolean ExprInt.ok() = true;
+  syn lazy Boolean ExprVar.ok() = this.getr().ok();
 
   // ExprVar
 
@@ -77,24 +96,24 @@ aspect Scoping {
 
   inh lazy Scope VarRef.s();
 
+  syn lazy Boolean VarRef.ok() {
+  
+    ArrayList<VarScope> res = new ArrayList<>();
+
+    Boolean found = this.s().rxLexVar(this.getid(), res);
+
+    if (found) {
+      System.out.println(" - VarRef " + this.getid() + " on line " +
+                        this.getStartLine() +
+                        " resolves to a declaration on line " + 
+                        res.get(0).getAstNode().getStartLine());
+    } else {
+      System.out.println("- Could not resolve VarRef " + this.getid() +
+                         " on line " + this.getStartLine());
+    }
+
+    return found;
+
+  }
+
 }
-
-
-/*
-
-  DeclsCons contributes
-    new VarScope()
-    to Scope.var()
-    for this.s();
-
-  DeclsCons contributes
-    new ModScope()
-    to Scope.mod()
-    for this.s();
-
-  DeclsCons contributes
-    new ModScope()
-    to Scope.imp()
-    for this.s();
-
-*/
