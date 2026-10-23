@@ -1,68 +1,100 @@
 import java.util.ArrayList;
 
-aspect Scoping {
-  syn lazy ArrayList<VarScope> Decls.varTargets();
-  syn lazy ArrayList<ModScope> Decls.modTargets();
-  syn lazy ArrayList<ModScope> Decls.impTargets();
-}
 
 aspect Scoping {
-
-  
 
   // Program
 
-  syn nta lazy LexScope Program.globScope() = new LexScope();
-  eq Program.globScope().LEX() = new ArrayList<>();
-  eq Program.globScope().VAR() = new ArrayList<>();
-  eq Program.globScope().MOD() = new ArrayList<>();
-  eq Program.globScope().IMP() = new ArrayList<>();
+  syn nta lazy LexScope Program.glob() = new LexScope();
+  eq Program.glob().lex() = new ArrayList<>();
 
+  syn nta lazy LexScope Program.dummy() = new LexScope();
+  eq Program.dummy().lex() = new ArrayList<>();
+
+  eq Program.getds().s() = this.glob();
+  eq Program.getds().s_mod() = this.dummy();
+
+  // Decls
+
+  inh lazy Scope Decls.s();
+  inh lazy Scope Decls.s_mod();
 
   // DeclsCons
 
-  eq DeclsCons.varTargets() {
-    ArrayList<VarScope> l = new ArrayList<>();
-    ArrayList<VarScope> r = new ArrayList<>();
-    l.addAll(r);
-    return l;
+  syn nta lazy LexScope DeclsCons.next() = new LexScope();
+  eq DeclsCons.next().lex() {
+    ArrayList<Scope> lex = new ArrayList<>();
+    lex.add(this.s());
+    return lex;
   }
 
-  eq DeclsCons.modTargets() {
-    ArrayList<ModScope> l = new ArrayList<>();
-    ArrayList<ModScope> r = new ArrayList<>();
-    l.addAll(r);
-    return l;
-  }
+  eq DeclsCons.getd().s() = this.s();
+  eq DeclsCons.getd().s_def() = this.next();
+  eq DeclsCons.getd().s_mod() = this.s_mod();
 
-  eq DeclsCons.impTargets() {
-    ArrayList<ModScope> l = new ArrayList<>();
-    ArrayList<ModScope> r = new ArrayList<>();
-    l.addAll(r);
-    return l;
-  }
+  eq DeclsCons.getds().s() = this.next();
+  eq DeclsCons.getds().s_mod() = this.s_mod();
 
   // DeclsNil
 
-  eq DeclsNil.varTargets() {
-    ArrayList<VarScope> l = new ArrayList<>();
-    ArrayList<VarScope> r = new ArrayList<>();
-    l.addAll(r);
-    return l;
-  }
+  // Decl
 
-  eq DeclsNil.modTargets() {
-    ArrayList<ModScope> l = new ArrayList<>();
-    ArrayList<ModScope> r = new ArrayList<>();
-    l.addAll(r);
-    return l;
-  }
+  inh lazy Scope Decl.s();
+  inh lazy Scope Decl.s_def();
+  inh lazy Scope Decl.s_mod();
 
-  eq DeclsNil.impTargets() {
-    ArrayList<ModScope> l = new ArrayList<>();
-    ArrayList<ModScope> r = new ArrayList<>();
-    l.addAll(r);
-    return l;
-  }
+  // DeclDef
+
+  eq DeclDef.b().s() = this.s();
+  eq DeclDef.b().s_def() = this.s();
+  eq DeclDef.b().s_mod() = this.s_mod();
+
+  // Bind
+
+  inh lazy Scope Bind.s();
+  inh lazy Scope Bind.s_def();
+  inh lazy Scope Bind.s_mod();
+
+  syn nta lazy VarScope Bind.s_var() = new VarScope(this.getid(), this);
+  eq Bind.s_var().lex() = new ArrayList<>();
+
+  Bind contributes
+    this.s_var()
+    to Scope.var()
+    for this.s_def();
+
+  eq Bind.gete().s() = this.s();
+
+  // Expr
+
+  inh lazy Scope Expr.s();
+
+  // ExprVar
+
+  eq ExprVar.getr().s() = this.s();
+
+  // VarRef
+
+  inh lazy Scope VarRef.s();
 
 }
+
+
+/*
+
+  DeclsCons contributes
+    new VarScope()
+    to Scope.var()
+    for this.s();
+
+  DeclsCons contributes
+    new ModScope()
+    to Scope.mod()
+    for this.s();
+
+  DeclsCons contributes
+    new ModScope()
+    to Scope.imp()
+    for this.s();
+
+*/

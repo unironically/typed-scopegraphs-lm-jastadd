@@ -4,3 +4,10 @@ LexScope:Scope ::= ;
 abstract DclScope:Scope ::= <name:String>;
 VarScope:DclScope ::= <AstNode:Bind>;
 ModScope:DclScope ::= <AstNode:Module>;
+
+//
+
+abstract EdgeTarget ::= ;
+VarTarget: EdgeTarget ::= <src:Scope> <tgt:Scope>;
+ModTarget: EdgeTarget ::= <src:Scope> <tgt:Scope>;
+ImpTarget: EdgeTarget ::= <src:Scope> <tgt:Scope>;

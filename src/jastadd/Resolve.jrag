@@ -1,24 +1,15 @@
 aspect Resolve {
 
-  inh lazy ArrayList<Scope> Scope.LEX();
-  inh lazy ArrayList<VarScope> Scope.VAR();
-  inh lazy ArrayList<ModScope> Scope.MOD();
-  inh lazy ArrayList<ModScope> Scope.IMP();
+  /*
+  inh lazy ArrayList<Scope>    Scope.lex();
+  inh lazy ArrayList<VarScope> Scope.var();
+  inh lazy ArrayList<ModScope> Scope.mod();
+  inh lazy ArrayList<ModScope> Scope.imp();
+  */
 
-  syn lazy ArrayList<Scope> Scope.followLEX() {
-    return null;
-  }
-
-  syn lazy ArrayList<VarScope> Scope.followVAR() {
-    return null;
-  }
-
-  syn lazy ArrayList<ModScope> Scope.followMOD() {
-    return null;
-  }
-
-  syn lazy ArrayList<ModScope> Scope.followIMP() {
-    return null;
-  }
+  inh lazy ArrayList<Scope> Scope.lex();
+  coll ArrayList<VarScope>  Scope.var();
+  coll ArrayList<ModScope>  Scope.mod();
+  coll ArrayList<ModScope>  Scope.imp();
 
 }
