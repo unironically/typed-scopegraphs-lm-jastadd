@@ -7,38 +7,53 @@ aspect Resolve {
 
   //
 
-  syn lazy ArrayList<VarScope> Scope.resolveLexVar(String lookup) {
+  syn lazy ArrayList<VarScope> Scope.resolveLexImpVar(String lookup) {
     ArrayList<VarScope> res = new ArrayList<>();
-    Boolean found = this.rxLexVar(lookup, res);
+    Boolean found = this.rxLexImpVar(lookup, res);
     return res;
   } 
 
-  syn lazy Boolean Scope.rxLexVar(String lookup, ArrayList<VarScope> res) {
+  syn lazy Boolean Scope.rxLexImpVar(String lookup, ArrayList<VarScope> res) {
 
     Boolean foundVars = false;
 
-    for (VarScope tgt: this.var()) {
-      Boolean resolved = tgt.rxVar(lookup, res);
-      foundVars |= resolved;
-    }
+    for (VarScope tgt: this.var())
+      foundVars |= tgt.rxVar(lookup, res);
 
     if (foundVars) return true;
 
-    for (Scope tgt: this.lex()) {
-      Boolean resolved = tgt.rxLexVar(lookup, res);
-      if (resolved) return true;
-    }
+    for (ModScope tgt: this.imp())
+      foundVars |= tgt.rxImpVar(lookup, res);
 
-    return false;
+    if (foundVars) return true;
+
+    for (Scope tgt: this.lex())
+      foundVars |= tgt.rxLexImpVar(lookup, res);
+
+    return foundVars;
+
+  }
+
+  syn lazy Boolean Scope.rxImpVar(String lookup, ArrayList<VarScope> res) {
+
+    Boolean resolved = false;
+
+    for (VarScope tgt: this.var())
+      resolved |= tgt.rxVar(lookup, res);
+
+    return resolved;
 
   }
 
   syn lazy Boolean VarScope.rxVar(String lookup, ArrayList<VarScope> res) {
+
     if (lookup.equals(this.getname())) {
       res.add(this);
       return true;
     }
+
     return false;
+  
   }
 
 }

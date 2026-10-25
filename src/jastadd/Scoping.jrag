@@ -98,9 +98,8 @@ aspect Scoping {
 
   syn lazy Boolean VarRef.ok() {
   
-    ArrayList<VarScope> res = new ArrayList<>();
-
-    Boolean found = this.s().rxLexVar(this.getid(), res);
+    ArrayList<VarScope> res = this.s().resolveLexImpVar(this.getid());
+    Boolean found = res.size() > 0;
 
     if (found) {
       System.out.println(" - VarRef " + this.getid() + " on line " +
