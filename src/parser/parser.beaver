@@ -41,7 +41,9 @@ decl =
   ;
 
 module =
-    MODULE IDENTIFIER LBRACE decls RBRACE {: return new Module(IDENTIFIER, decls); :}
+    MODULE IDENTIFIER LBRACE decls RBRACE {: Module m = new Module(IDENTIFIER, decls);
+                                             m.setStart(Symbol.getLine(IDENTIFIER.getStart()), (short) 0);
+                                             return m; :}
   ;
 
 expr =
@@ -70,5 +72,7 @@ varRef =
   ;
 
 modRef =
-    IDENTIFIER                              {: return new ModRef(IDENTIFIER); :}
+    IDENTIFIER                              {: ModRef mr = new ModRef(IDENTIFIER); 
+                                               mr.setStart(Symbol.getLine(IDENTIFIER.getStart()), (short) 0);
+                                               return mr; :}
   ;

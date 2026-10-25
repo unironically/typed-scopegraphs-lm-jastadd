@@ -55,11 +55,55 @@ aspect Scoping {
 
   // DeclDef
 
-  eq DeclDef.b().s() = this.s();
-  eq DeclDef.b().s_def() = this.s_def();
-  eq DeclDef.b().s_mod() = this.s_mod();
+  eq DeclDef.getb().s() = this.s();
+  eq DeclDef.getb().s_def() = this.s_def();
+  eq DeclDef.getb().s_mod() = this.s_mod();
 
   syn lazy Boolean DeclDef.ok() = this.getb().ok();
+
+  // DeclMod
+
+  eq DeclMod.getm().s() = this.s();
+  eq DeclMod.getm().s_def() = this.s_def();
+  eq DeclMod.getm().s_mod() = this.s_mod();
+
+  syn lazy Boolean DeclMod.ok() = this.getm().ok();
+
+  // DeclImp
+
+  eq DeclImp.getr().s() = this.s();
+  eq DeclImp.getr().s_def() = this.s_def();
+  eq DeclImp.getr().s_mod() = this.s_mod();
+
+  syn lazy Boolean DeclImp.ok() = this.getr().ok();
+  
+  // Module
+
+  inh lazy Scope Module.s();
+  inh lazy Scope Module.s_def();
+  inh lazy Scope Module.s_mod();
+
+  syn nta lazy ModScope Module.s_newmod() = new ModScope(this.getid(), this);
+  eq Module.s_newmod().lex() {
+    ArrayList<Scope> lexTgts = new ArrayList<>();
+    lexTgts.add(this.s());
+    return lexTgts;
+  }
+
+  syn lazy Boolean Module.ok() = this.getds().ok();
+
+  Module contributes
+    this.s_newmod()
+    to Scope.mod()
+    for this.s_def();
+
+  Module contributes
+    this.s_newmod()
+    to Scope.mod()
+    for this.s_mod();
+
+  eq Module.getds().s() = this.s();
+  eq Module.getds().s_mod() = this.s_newmod();
 
   // Bind
 
@@ -75,6 +119,11 @@ aspect Scoping {
     to Scope.var()
     for this.s_def();
 
+  Bind contributes
+    this.s_var()
+    to Scope.var()
+    for this.s_mod();
+
   eq Bind.gete().s() = this.s();
 
   syn lazy Boolean Bind.ok() = this.gete().ok();
@@ -85,8 +134,16 @@ aspect Scoping {
 
   syn lazy Boolean Expr.ok() = false;
 
+  // ExprInt
+
   syn lazy Boolean ExprInt.ok() = true;
   syn lazy Boolean ExprVar.ok() = this.getr().ok();
+
+  // ExprAdd
+
+  syn lazy Boolean ExprAdd.ok() = this.getl().ok() && this.getr().ok();
+  eq ExprAdd.getl().s() = this.s();
+  eq ExprAdd.getr().s() = this.s();
 
   // ExprVar
 
@@ -114,5 +171,35 @@ aspect Scoping {
     return found;
 
   }
+
+  // ModRef
+
+  inh lazy Scope ModRef.s();
+  inh lazy Scope ModRef.s_def();
+
+  syn lazy Boolean ModRef.ok() = true;
+
+  syn lazy ArrayList<ModScope> ModRef.impRes() {
+
+    ArrayList<ModScope> res = this.s().resolveLexImpMod(this.getid());
+    Boolean found = res.size() > 0;
+
+    if (found) {
+      System.out.println(" - ModRef " + this.getid() + " on line " +
+                        this.getStartLine() +
+                        " resolves to a declaration on line " + 
+                        res.get(0).getAstNode().getStartLine());
+    } else {
+      System.out.println("- Could not resolve ModRef " + this.getid() +
+                         " on line " + this.getStartLine());
+    }
+
+    return res;
+  }
+
+  ModRef contributes each
+    this.impRes()
+    to Scope.imp()
+    for this.s_def();
 
 }

@@ -1,51 +1,76 @@
+import java.util.Queue;
+import java.util.LinkedList;
+
 aspect Resolve {
 
   inh lazy ArrayList<Scope> Scope.lex();
   coll ArrayList<VarScope>  Scope.var();
   coll ArrayList<ModScope>  Scope.mod();
   coll ArrayList<ModScope>  Scope.imp();
+  
+  //
+  
+  syn lazy ArrayList<VarScope> Scope.resolveLexImpVar(String lookup) {
+    ArrayList<Scope> res = new ArrayList<>();
+    this.rxLexImpLast(lookup, res, true);
+    ArrayList<VarScope> res2 = new ArrayList<>();
+    for (Scope s: res) res2.add((VarScope) s);
+    return res2;
+  }
+
+  syn lazy ArrayList<ModScope> Scope.resolveLexImpMod(String lookup) {
+    ArrayList<Scope> res = new ArrayList<>();
+    this.rxLexImpLast(lookup, res, false);
+    ArrayList<ModScope> res2 = new ArrayList<>();
+    for (Scope s: res) res2.add((ModScope) s);
+    return res2;
+  }
 
   //
 
-  syn lazy ArrayList<VarScope> Scope.resolveLexImpVar(String lookup) {
-    ArrayList<VarScope> res = new ArrayList<>();
-    Boolean found = this.rxLexImpVar(lookup, res);
-    return res;
-  } 
-
-  syn lazy Boolean Scope.rxLexImpVar(String lookup, ArrayList<VarScope> res) {
-
-    Boolean foundVars = false;
-
-    for (VarScope tgt: this.var())
-      foundVars |= tgt.rxVar(lookup, res);
-
-    if (foundVars) return true;
-
-    for (ModScope tgt: this.imp())
-      foundVars |= tgt.rxImpVar(lookup, res);
-
-    if (foundVars) return true;
-
-    for (Scope tgt: this.lex())
-      foundVars |= tgt.rxLexImpVar(lookup, res);
-
-    return foundVars;
-
-  }
-
-  syn lazy Boolean Scope.rxImpVar(String lookup, ArrayList<VarScope> res) {
+  syn lazy Boolean Scope.rxLexImpLast(String lookup, ArrayList<Scope> res, Boolean isVarRes) {
 
     Boolean resolved = false;
 
-    for (VarScope tgt: this.var())
-      resolved |= tgt.rxVar(lookup, res);
+    if (isVarRes) {
+      for (VarScope tgt: this.var())
+        resolved |= tgt.rxLast(lookup, res);
+    } else {
+      for (ModScope tgt: this.mod())
+        resolved |= tgt.rxLast(lookup, res);
+    }
+
+    if (resolved) return true;
+
+    for (ModScope tgt: this.imp())
+      resolved |= tgt.rxImpLast(lookup, res, isVarRes);
+
+    if (resolved) return true;
+
+    for (Scope tgt: this.lex())
+      resolved |= tgt.rxLexImpLast(lookup, res, isVarRes);
 
     return resolved;
 
   }
 
-  syn lazy Boolean VarScope.rxVar(String lookup, ArrayList<VarScope> res) {
+  syn lazy Boolean Scope.rxImpLast(String lookup, ArrayList<Scope> res, Boolean isVarRes) {
+
+    Boolean resolved = false;
+
+    if (isVarRes) {
+      for (VarScope tgt: this.var())
+        resolved |= tgt.rxLast(lookup, res);
+    } else {
+      for (ModScope tgt: this.mod())
+        resolved |= tgt.rxLast(lookup, res);
+    }
+
+    return resolved;
+
+  }
+
+  syn lazy Boolean DclScope.rxLast(String lookup, ArrayList<Scope> res) {
 
     if (lookup.equals(this.getname())) {
       res.add(this);
