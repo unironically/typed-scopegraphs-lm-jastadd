@@ -3,7 +3,7 @@ import java.util.LinkedList;
 
 aspect Resolve {
 
-  inh lazy ArrayList<Scope> Scope.lex();
+  inh lazy ArrayList<RegionScope> Scope.lex();
   coll ArrayList<VarScope>  Scope.var();
   coll ArrayList<ModScope>  Scope.mod();
   coll ArrayList<ModScope>  Scope.imp();
@@ -47,7 +47,7 @@ aspect Resolve {
 
     if (resolved) return true;
 
-    for (Scope tgt: this.lex())
+    for (RegionScope tgt: this.lex())
       resolved |= tgt.rxLexImpLast(lookup, res, isVarRes);
 
     return resolved;

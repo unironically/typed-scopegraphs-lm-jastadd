@@ -1,7 +1,41 @@
 import java.util.ArrayList;
 
+aspect Scoping {
+  
+  /* In the abstract syntax for scopes, ModScope extends DclScope.
+   * If we want two relations for ModScope, the second must be an interface in JastAdd.
+   * However there is no clarity between the Scope type and RegionScope. We must
+   * repeat the signatures of all attributes + methods for Scope in the RegionScope interface.
+   * If RegionScope had a scope graphs supertype other than Scope, we would have to copy in
+   * the signatures for those scope types too.
+   */
+
+  interface RegionScope {
+    public ArrayList<RegionScope> lex();
+    public ArrayList<VarScope> var();
+    public ArrayList<ModScope> mod();
+    public ArrayList<ModScope> imp();
+    public ArrayList<VarScope> resolveLexImpVar(String lookup);
+    public ArrayList<ModScope> resolveLexImpMod(String lookup);
+    public Boolean rxLexImpLast(String lookup, ArrayList<Scope> res, Boolean isVarRes);
+    public Boolean rxImpLast(String lookup, ArrayList<Scope> res, Boolean isVarRes);
+  }
+
+  // 'LexScope is RegionScope'
+  LexScope implements RegionScope;
+
+  // 'ModScope is RegionScope'
+  ModScope implements RegionScope;
+
+}
 
 aspect Scoping {
+
+  /* Equations defining scope graphs for LM and executing queries for variable
+   * uses and import declarations.
+   * The way we construct scope graphs here corresponds to a sequential C-like
+   * scoping semantics - no forward referencing.
+   */
 
   // Program
 
@@ -28,8 +62,8 @@ aspect Scoping {
 
   // Decls
 
-  inh lazy Scope Decls.s();
-  inh lazy Scope Decls.s_mod();
+  inh lazy RegionScope Decls.s();
+  inh lazy RegionScope Decls.s_mod();
 
   syn lazy Boolean Decls.ok() = false;
 
@@ -37,7 +71,7 @@ aspect Scoping {
 
   syn nta lazy LexScope DeclsCons.next() = new LexScope();
   eq DeclsCons.next().lex() {
-    ArrayList<Scope> lex = new ArrayList<>();
+    ArrayList<RegionScope> lex = new ArrayList<>();
     lex.add(this.s());
     return lex;
   }
@@ -74,9 +108,9 @@ aspect Scoping {
 
   // Decl
 
-  inh lazy Scope Decl.s();
-  inh lazy Scope Decl.s_def();
-  inh lazy Scope Decl.s_mod();
+  inh lazy RegionScope Decl.s();
+  inh lazy RegionScope Decl.s_def();
+  inh lazy RegionScope Decl.s_mod();
   syn lazy Boolean Decl.ok() = false;
 
   // DeclDef
@@ -126,13 +160,13 @@ aspect Scoping {
   
   // Module
 
-  inh lazy Scope Module.s();
-  inh lazy Scope Module.s_def();
-  inh lazy Scope Module.s_mod();
+  inh lazy RegionScope Module.s();
+  inh lazy RegionScope Module.s_def();
+  inh lazy RegionScope Module.s_mod();
 
   syn nta lazy ModScope Module.s_newmod() = new ModScope(this.getid(), this);
   eq Module.s_newmod().lex() {
-    ArrayList<Scope> lexTgts = new ArrayList<>();
+    ArrayList<RegionScope> lexTgts = new ArrayList<>();
     lexTgts.add(this.s());
     return lexTgts;
   }
@@ -165,9 +199,9 @@ aspect Scoping {
 
   // Bind
 
-  inh lazy Scope Bind.s();
-  inh lazy Scope Bind.s_def();
-  inh lazy Scope Bind.s_mod();
+  inh lazy RegionScope Bind.s();
+  inh lazy RegionScope Bind.s_def();
+  inh lazy RegionScope Bind.s_mod();
 
   syn nta lazy VarScope Bind.s_var() = new VarScope(this.getid(), this);
   eq Bind.s_var().lex() = new ArrayList<>();
@@ -197,7 +231,7 @@ aspect Scoping {
 
   // Expr
 
-  inh lazy Scope Expr.s();
+  inh lazy RegionScope Expr.s();
   syn lazy Boolean Expr.ok() = false;
 
   // ExprInt
@@ -235,7 +269,7 @@ aspect Scoping {
 
   // VarRef
 
-  inh lazy Scope VarRef.s();
+  inh lazy RegionScope VarRef.s();
 
   syn lazy Boolean VarRef.ok() {
   
@@ -263,8 +297,8 @@ aspect Scoping {
 
   // ModRef
 
-  inh lazy Scope ModRef.s();
-  inh lazy Scope ModRef.s_def();
+  inh lazy RegionScope ModRef.s();
+  inh lazy RegionScope ModRef.s_def();
 
   syn lazy Boolean ModRef.ok() = true;
 

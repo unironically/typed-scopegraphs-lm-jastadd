@@ -1,13 +1,6 @@
-abstract Scope ::= ;
-LexScope:Scope ::= ;
+abstract Scope ::= ;  // Default, built-in super scope type.
+LexScope:Scope ::= ;  // 'scope type LexScope ->;'
 
-abstract DclScope:Scope ::= <name:String>;
-VarScope:DclScope ::= <AstNode:Bind>;
-ModScope:DclScope ::= <AstNode:Module>;
-
-//
-
-abstract EdgeTarget ::= ;
-VarTarget: EdgeTarget ::= <src:Scope> <tgt:Scope>;
-ModTarget: EdgeTarget ::= <src:Scope> <tgt:Scope>;
-ImpTarget: EdgeTarget ::= <src:Scope> <tgt:Scope>;
+abstract DclScope:Scope ::= <name:String>;  // 'abstract Scope type DclScope -> name::String'
+VarScope:DclScope ::= <AstNode:Bind>;       // 'scope type VarScope -> AstNode::Decorated Bind', 'VarScope is DclScope'
+ModScope:DclScope ::= <AstNode:Module>;     // 'scope type ModScope -> AstNode::Decorated Module', 'ModScope is DclScope'
