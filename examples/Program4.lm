@@ -1,0 +1,19 @@
+mod a {
+  def x:int = 1
+  mod b {
+    def x:int = 2
+  }
+}
+
+mod b {
+  def x:int = 3
+  mod a {
+    def x:int = 4
+  }
+}
+
+mod c {
+  imp a
+  imp b
+  def y:int = x
+}

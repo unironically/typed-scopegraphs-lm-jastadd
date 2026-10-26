@@ -16,6 +16,16 @@ aspect Scoping {
 
   syn lazy Boolean Program.ok() = this.getds().ok();
 
+  /*
+  prod Program ::= ds::Decls | glob::LexScope dummy::LexScope
+  { glob = LexScope();
+    dummy = LexScope();
+    ds.s = glob;
+    ds.s_mod = dummy;
+    this.ok = ds.ok;
+     }
+  */
+
   // Decls
 
   inh lazy Scope Decls.s();
@@ -41,16 +51,32 @@ aspect Scoping {
 
   syn lazy Boolean DeclsCons.ok() = this.getd().ok() && this.getds().ok();
 
+  /*
+  prod DeclsCons:Decls ::= d::Decl ds::Decls | next::LexScope
+  { next = LexScope();
+    next -[ `lex ]-> this.s;
+    d.s = this.s;
+    d.s_def = this.s_def;
+    d.s_mod = this.s_mod;
+    ds.s = this.next;
+    ds.s_mod = this.s_mod;
+    this.ok = d.ok && ds.ok; }
+  */
+
   // DeclsNil
 
   syn lazy Boolean DeclsNil.ok() = true;
+
+  /*
+  prod DeclsNil:Decls ::=
+  { this.ok = true; }
+  */
 
   // Decl
 
   inh lazy Scope Decl.s();
   inh lazy Scope Decl.s_def();
   inh lazy Scope Decl.s_mod();
-
   syn lazy Boolean Decl.ok() = false;
 
   // DeclDef
@@ -58,24 +84,45 @@ aspect Scoping {
   eq DeclDef.getb().s() = this.s();
   eq DeclDef.getb().s_def() = this.s_def();
   eq DeclDef.getb().s_mod() = this.s_mod();
-
   syn lazy Boolean DeclDef.ok() = this.getb().ok();
+
+  /*
+  prod DeclDef:Decl ::= b::Bind
+  { b.s = this.s;
+    b.s_def = this.s_def;
+    b.s_mod = this.s_def;
+    this.ok = b.ok; }
+  */
 
   // DeclMod
 
   eq DeclMod.getm().s() = this.s();
   eq DeclMod.getm().s_def() = this.s_def();
   eq DeclMod.getm().s_mod() = this.s_mod();
-
   syn lazy Boolean DeclMod.ok() = this.getm().ok();
+
+  /*
+  prod DeclMod:Decl ::= m::Module
+  { m.s = this.s;
+    m.s_def = this.s_def;
+    m.s_mod = this.s_def;
+    this.ok = m.ok; }
+  */
 
   // DeclImp
 
   eq DeclImp.getr().s() = this.s();
   eq DeclImp.getr().s_def() = this.s_def();
   eq DeclImp.getr().s_mod() = this.s_mod();
-
   syn lazy Boolean DeclImp.ok() = this.getr().ok();
+
+  /*
+  prod DeclImp:Decl ::= r::ModRef
+  { r.s = this.s;
+    r.s_def = this.s_def;
+    r.s_mod = this.s_def;
+    this.ok = r.ok; }
+  */
   
   // Module
 
@@ -90,8 +137,6 @@ aspect Scoping {
     return lexTgts;
   }
 
-  syn lazy Boolean Module.ok() = this.getds().ok();
-
   Module contributes
     this.s_newmod()
     to Scope.mod()
@@ -102,8 +147,21 @@ aspect Scoping {
     to Scope.mod()
     for this.s_mod();
 
+  syn lazy Boolean Module.ok() = this.getds().ok();
+
   eq Module.getds().s() = this.s();
   eq Module.getds().s_mod() = this.s_newmod();
+
+  /*
+  prod Module ::= ds::Decls | s_newmod::ModScope
+  { s_newmod = ModScope(this.id, this);
+    s_newmod   -[ `lex ]-> this.s; 
+    this.s_def -[ `mod ]-> s_newmod;
+    this.s_mod -[ `mod ]-> s_newmod;
+    ds.s = this.s;
+    ds.s_mod = s_newmod;
+    this.ok = ds.ok; }
+  */
 
   // Bind
 
@@ -128,16 +186,28 @@ aspect Scoping {
 
   syn lazy Boolean Bind.ok() = this.gete().ok();
 
+  /*
+  prod Bind ::= id::String ty::Type e::Expr | s_var::VarScope
+  { s_var = VarScope(this.id, this);
+    this.s_def -[ `var ]-> s_var;
+    this.s_mod -[ `var ]-> s_var;
+    e.s = this.s;
+    this.ok = e.ok; }
+  */
+
   // Expr
 
   inh lazy Scope Expr.s();
-
   syn lazy Boolean Expr.ok() = false;
 
   // ExprInt
 
   syn lazy Boolean ExprInt.ok() = true;
-  syn lazy Boolean ExprVar.ok() = this.getr().ok();
+
+  /*
+  prod ExprInt:Expr ::= i::Integer
+  { this.ok = true; }
+  */
 
   // ExprAdd
 
@@ -145,9 +215,23 @@ aspect Scoping {
   eq ExprAdd.getl().s() = this.s();
   eq ExprAdd.getr().s() = this.s();
 
+  /*
+  prod ExprAdd:Expr ::= l::Expr r::Expr
+  { l.s = this.s;
+    r.s = this.s;
+    this.ok = l.ok && r.ok; }
+  */
+
   // ExprVar
 
   eq ExprVar.getr().s() = this.s();
+  syn lazy Boolean ExprVar.ok() = this.getr().ok();
+
+  /*
+  prod ExprVar:Expr ::= r::VarRef
+  { r.s = this.s;
+    this.ok = r.ok; }
+  */
 
   // VarRef
 
@@ -171,6 +255,11 @@ aspect Scoping {
     return found;
 
   }
+
+  /*
+  prod VarRef ::= id::String
+  { this.ok = length(this.s.resolveLexImpVar(this.id)) > 0; }
+  */
 
   // ModRef
 
@@ -201,5 +290,11 @@ aspect Scoping {
     this.impRes()
     to Scope.imp()
     for this.s_def();
+
+  /*
+  prod ModRef ::= id::String
+  { this.impRes = this.s.resolveLexImpMod(this.id);
+    this.s_def -[ `imp ]-> this.impRes; }
+  */
 
 }

@@ -25,8 +25,9 @@ public class Compiler {
         System.exit(1);
       }
       Program prog = parse(args);
-      System.out.println(prog.treePrint());
-      System.out.println((prog.ok()) ? "Good!" : "Not good!");
+      //System.out.println(prog.treePrint());
+      System.out.println("Resolution results:");
+      prog.ok();
     } catch (FileNotFoundException e) {
         System.out.println("File not found!");
         System.exit(1);
